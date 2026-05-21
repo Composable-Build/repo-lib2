@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.16)
+project(plugin_two CXX)
+set(CMAKE_CXX_STANDARD 17)
+add_library(plugin_two SHARED src/plugin.cpp)
+set_target_properties(plugin_two PROPERTIES OUTPUT_NAME "plugin_two")
