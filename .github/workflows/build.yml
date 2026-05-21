@@ -2,22 +2,57 @@ name: build
 on:
   push:
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+      - name: Parse version from tag
+        id: version
+        run: |
+          TAG=$(git tag --sort=-creatordate | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1 || echo "v0.0.0")
+          MAJOR=$(echo $TAG | cut -d. -f1 | tr -d 'v')
+          MINOR=$(echo $TAG | cut -d. -f2)
+          PATCH=$(echo $TAG | cut -d. -f3)
+          BUILD=${{ github.run_number }}
+          echo "major=$MAJOR"   >> $GITHUB_OUTPUT
+          echo "minor=$MINOR"   >> $GITHUB_OUTPUT
+          echo "patch=$PATCH"   >> $GITHUB_OUTPUT
+          echo "build=$BUILD"   >> $GITHUB_OUTPUT
+          echo "version=$MAJOR.$MINOR.$PATCH.$BUILD" >> $GITHUB_OUTPUT
+      - name: Cache FetchContent deps
+        uses: actions/cache@v4
+        with:
+          path: build/_deps
+          key: ${{ runner.os }}-deps-${{ hashFiles('CMakeLists.txt') }}
+          restore-keys: ${{ runner.os }}-deps-
       - name: Configure
-        run: cmake -S . -B build
-      - name: Build
-        run: cmake --build build
+        run: |
+          cmake -S . -B build \
+            -DVERSION_MAJOR=${{ steps.version.outputs.major }} \
+            -DVERSION_MINOR=${{ steps.version.outputs.minor }} \
+            -DVERSION_PATCH=${{ steps.version.outputs.patch }} \
+            -DVERSION_BUILD=${{ steps.version.outputs.build }}
+      - name: Run tests
+        run: cmake --build build --target tests_lib2 && ./build/tests_lib2
+      - name: Build lib
+        run: cmake --build build --target plugin_two
       - name: Package
         run: |
           mkdir -p dist
           cp build/libplugin_two.so dist/
-          tar -czf dist/plugin_two.tar.gz -C dist libplugin_two.so
+          tar -czf dist/plugin_two-${{ steps.version.outputs.version }}.tar.gz -C dist libplugin_two.so
       - uses: actions/upload-artifact@v4
         with:
-          name: plugin_two
-          path: dist/plugin_two.tar.gz
+          name: plugin_two-${{ steps.version.outputs.version }}
+          path: dist/plugin_two-${{ steps.version.outputs.version }}.tar.gz
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/plugin_two-${{ steps.version.outputs.version }}.tar.gz
+          name: plugin_two ${{ steps.version.outputs.version }}
