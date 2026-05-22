@@ -1,5 +1,6 @@
 #include <iostream>
 #include "plugin_info.h"
+#include "plugin.h"
 #include "version.h"
 extern "C" const char* plugin_name()    { return PLUGIN_NAME; }
 extern "C" const char* plugin_version() { return VERSION_STRING; }
