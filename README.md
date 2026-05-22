@@ -10,6 +10,7 @@ cmake --build build
 ## Tests
 ```bash
 cmake --build build --target tests_lib2 --verbose
+./build/tests_lib2
 ```
 ## Forcer l'échec des tests
 Dans `tests/test_config.h`, passer `TEST_SHOULD_FAIL` à `1`.
