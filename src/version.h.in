@@ -4,4 +4,3 @@
 #define VERSION_PATCH @VERSION_PATCH@
 #define VERSION_BUILD @VERSION_BUILD@
 #define VERSION_STRING "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@.@VERSION_BUILD@"
-extern "C" inline const char* plugin_version() { return VERSION_STRING; }
