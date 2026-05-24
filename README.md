@@ -18,3 +18,4 @@ Dans `tests/test_config.h`, passer `TEST_SHOULD_FAIL` à `1`.
 ```bash
 git tag v1.0.0 && git push origin v1.0.0
 ```
+
