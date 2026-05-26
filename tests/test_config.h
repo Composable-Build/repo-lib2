@@ -1,2 +1,2 @@
 #pragma once
-#define TEST_SHOULD_FAIL 0
+#define TEST_SHOULD_FAIL 1
